@@ -14,7 +14,7 @@ end
 
 local raidDiffMap = {}
 raidDiffMap[14] = _G.PLAYER_DIFFICULTY1
-raidDiffMap[15] = _G.PLAYER_DIFFICULTY2 
+raidDiffMap[15] = _G.PLAYER_DIFFICULTY2
 raidDiffMap[16] = _G.PLAYER_DIFFICULTY6
 
 local function get_raid_diff()
@@ -38,14 +38,39 @@ local function get_legacy_diff()
 end
 
 function BrokerDungeonDifficulty.build_tooltip(self)
-    self:AddLine("Dungeon", tostring(GetDungeonDifficultyID()))
-    self:AddLine("Dungeon", tostring(GetRaidDifficultyID()))
-    self:AddLine("Legacy", tostring(GetLegacyRaidDifficultyID()))
+    self:AddHeader(_G.DUNGEON_DIFFICULTY)
+    self:AddSeparator()
+    for k, v in pairs(dungeonDiffMap) do
+        local line = self:AddLine("  " .. v)
+        self:SetLineScript(line, "OnMouseUp", function() SetDungeonDifficultyID(k) end)
+    end
+    
+    self:AddLine("")
+
+    self:AddHeader(_G.RAID_DIFFICULTY)
+    self:AddSeparator()
+    for k, v in pairs(raidDiffMap) do
+        print(k)
+        print(v)
+        print("")
+        local line = self:AddLine("  " .. v)
+        self:SetLineScript(line, "OnMouseUp", function() SetRaidDifficultyID(k) end)
+    end
+    
+    self:AddLine("")
+
+    self:AddHeader(_G.LEGACY_RAID_DIFFICULTY)
+    self:AddSeparator()
+    for k, v in pairs(legacyRaidDiffMap) do
+        local line = self:AddLine("  " .. v)
+        self:SetLineScript(line, "OnMouseUp", function() SetLegacyRaidDifficultyID(k) end)
+    end
 end
 
 -- TODO if raid is Mythic, grey out legacy settings
 -- TODO if inside an instance, only show the relevant settings
 -- TODO toggleable shorthand mode w/ cvars on click
+-- TODO fix sorting
 function BrokerDungeonDifficulty.build_label()    
     return "" .. get_dungeon_diff() .. "/" .. get_raid_diff() .. "/" .. get_legacy_diff()
 end
@@ -72,8 +97,7 @@ local function anchor_OnEnter(self)
         self.tooltip = nil
     end
 
-    -- Acquire a tooltip with 3 columns, respectively aligned to left, center and right
-    local tooltip = LibQTip:Acquire("FooBarTooltip", 2, "RIGHT", "LEFT")
+    local tooltip = LibQTip:Acquire(ADDON, 1, "LEFT")
     self.tooltip = tooltip
     tooltip.OnRelease = OnRelease
     tooltip.OnLeave = OnLeave
