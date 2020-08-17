@@ -1,3 +1,10 @@
+-- TODO if raid is Mythic, grey out legacy settings
+-- TODO if inside an instance, only show the relevant settings
+-- TODO toggleable shorthand mode w/ cvars on click
+-- TODO hook relevant events so we don't have to update every 5s
+-- TODO tooltip should show a colored asterisk if that's what you've already selected
+-- TODO tooltip line should not be clickable if that's what you've already selected
+
 -- the map tables are auto-sorting based on the strings, this is to preserve manual ordering
 local function array_to_map(array)
     local output = {}
@@ -66,10 +73,6 @@ local function build_tooltip(self)
     build_diff_setter(self, legacy_display, SetLegacyRaidDifficultyID)
 end
 
--- TODO if raid is Mythic, grey out legacy settings
--- TODO if inside an instance, only show the relevant settings
--- TODO toggleable shorthand mode w/ cvars on click
--- TODO hook relevant events so we don't have to update every 5s
 local function build_label()
     local display = {difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
                      difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
