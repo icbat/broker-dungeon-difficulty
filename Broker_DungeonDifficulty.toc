@@ -1,0 +1,14 @@
+## Interface: 80307
+## Title: Broker: Dungeon Difficulty
+## Notes: Dungeon Difficulty display and switching
+## Author: @icbat
+## Version: 1
+
+## Dependencies
+libs/LibStub.lua
+libs/CallbackHandler-1.0.lua
+libs/LibDataBroker-1.1.lua
+libs/LibQTip-1.0.lua
+
+## This addon
+Broker_DungeonDifficulty.lua

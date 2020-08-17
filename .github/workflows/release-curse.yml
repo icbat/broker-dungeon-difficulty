@@ -1,0 +1,35 @@
+name: Release to Curse
+
+on:
+  workflow_dispatch:
+    branches: [ master ]
+  # push:
+  #   branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
+
+    - name: Create 'dist' folder
+      run: mkdir Broker_CTA/
+
+    - name: Put everything into a folder
+      run: cp Broker_CTA.lua Broker.lua Display.lua Localization.lua Broker_CTA.toc LICENSE README.md Broker_CTA/
+  
+    - name: Zip it good
+      run: zip -9 -r Broker_CTA.zip Broker_CTA/
+           
+    - name: Upload to CurseForge
+      uses: itsmeow/curseforge-upload@v2
+      with:
+        token: ${{ secrets.CURSEFORGE }}
+        project_id: <<>>
+        game_endpoint: wow
+        file_path: Broker_CTA.zip
+        changelog: See https://github.com/icbat/broker-call-to-arms for latest changes
+        game_versions: 8.3.0,9.0.1
+        release_type: release
