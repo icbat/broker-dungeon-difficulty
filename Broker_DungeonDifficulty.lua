@@ -1,20 +1,34 @@
-local BrokerDungeonDifficulty = {}
+-- the map tables are auto-sorting based on the strings, this is to preserve manual ordering
+local function array_to_map(array)
+    local output = {}
+    for _, el in ipairs(array) do
+        output[el.id] = el.display
+    end
+    return output
+end
 
-local dungeonDiffMap = {}
-dungeonDiffMap[1] = _G.PLAYER_DIFFICULTY1
-dungeonDiffMap[2] = _G.PLAYER_DIFFICULTY2
-dungeonDiffMap[23] = _G.PLAYER_DIFFICULTY6
+local dungeon_display = {
+    {id = 1, display = _G.PLAYER_DIFFICULTY1},
+    {id = 2, display = _G.PLAYER_DIFFICULTY2},
+    {id = 23, display = _G.PLAYER_DIFFICULTY6},
+}
 
-local raidDiffMap = {}
-raidDiffMap[14] = _G.PLAYER_DIFFICULTY1
-raidDiffMap[15] = _G.PLAYER_DIFFICULTY2
-raidDiffMap[16] = _G.PLAYER_DIFFICULTY6
+local raid_display = {
+    {id = 14, display = _G.PLAYER_DIFFICULTY1},
+    {id = 15, display = _G.PLAYER_DIFFICULTY2},
+    {id = 16, display = _G.PLAYER_DIFFICULTY6},
+}
 
-local legacyRaidDiffMap = {}
-legacyRaidDiffMap[3] = _G.RAID_DIFFICULTY_10PLAYER
-legacyRaidDiffMap[4] = _G.RAID_DIFFICULTY_25PLAYER
-legacyRaidDiffMap[5] = _G.RAID_DIFFICULTY_10PLAYER_HEROIC
-legacyRaidDiffMap[6] = _G.RAID_DIFFICULTY_25PLAYER_HEROIC
+local legacy_display = {
+    { id = 3, display = _G.RAID_DIFFICULTY_10PLAYER},
+    { id = 5, display = _G.RAID_DIFFICULTY_10PLAYER_HEROIC},
+    { id = 4, display = _G.RAID_DIFFICULTY_25PLAYER},
+    { id = 6, display = _G.RAID_DIFFICULTY_25PLAYER_HEROIC},
+}
+
+local dungeonDiffMap = array_to_map(dungeon_display)
+local raidDiffMap = array_to_map(raid_display)
+local legacyRaidDiffMap = array_to_map(legacy_display)
 
 local function difficulty(description, getter_func, diff_map)
     local id = getter_func()
@@ -25,39 +39,38 @@ local function difficulty(description, getter_func, diff_map)
 end
 
 local function build_diff_setter(self, difficulty_map, setter_function)
-    for k, v in pairs(difficulty_map) do
-        local line = self:AddLine("  " .. v)
+    for _, el in ipairs(difficulty_map) do
+        local line = self:AddLine("  " .. el.display)
         local callback = function()
-            setter_function(k)
+            setter_function(el.id)
         end
         self:SetLineScript(line, "OnMouseUp", callback)
     end
 end
 
-function BrokerDungeonDifficulty.build_tooltip(self)
+local function build_tooltip(self)
     self:AddHeader(_G.DUNGEON_DIFFICULTY)
     self:AddSeparator()
-    build_diff_setter(self, dungeonDiffMap, SetDungeonDifficultyID)
+    build_diff_setter(self, dungeon_display, SetDungeonDifficultyID)
 
     self:AddLine("")
 
     self:AddHeader(_G.RAID_DIFFICULTY)
     self:AddSeparator()
-    build_diff_setter(self, raidDiffMap, SetRaidDifficultyID)
+    build_diff_setter(self, raid_display, SetRaidDifficultyID)
 
     self:AddLine("")
 
     self:AddHeader(_G.LEGACY_RAID_DIFFICULTY)
     self:AddSeparator()
-    build_diff_setter(self, legacyRaidDiffMap, SetLegacyRaidDifficultyID)
+    build_diff_setter(self, legacy_display, SetLegacyRaidDifficultyID)
 end
 
 -- TODO if raid is Mythic, grey out legacy settings
 -- TODO if inside an instance, only show the relevant settings
 -- TODO toggleable shorthand mode w/ cvars on click
--- TODO fix sorting
 -- TODO hook relevant events so we don't have to update every 5s
-function BrokerDungeonDifficulty.build_label()
+local function build_label()
     local display = {difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
                      difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
                      difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)}
@@ -93,7 +106,7 @@ local function anchor_OnEnter(self)
     tooltip.OnLeave = OnLeave
     tooltip:SetAutoHideDelay(.1, self)
 
-    BrokerDungeonDifficulty.build_tooltip(tooltip)
+    build_tooltip(tooltip)
 
     tooltip:SmartAnchorTo(self)
 
@@ -113,7 +126,7 @@ function dataobj:OnClick()
 end
 
 function set_label(self)
-    dataobj.text = BrokerDungeonDifficulty.build_label()
+    dataobj.text = build_label()
 end
 
 -- invisible frame for updating/hooking events
