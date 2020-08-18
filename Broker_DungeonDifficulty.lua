@@ -1,15 +1,9 @@
--- TODO if raid is Mythic, grey out legacy display?
 -- TODO if inside an instance, only show the relevant settings
 -- TODO toggleable shorthand mode w/ savedvariables on click
 
--- the map tables are auto-sorting based on the strings, this is to preserve manual ordering
-local function array_to_map(array)
-    local output = {}
-    for _, el in ipairs(array) do
-        output[el.id] = el.display
-    end
-    return output
-end
+-------------------
+--- Data structures
+-------------------
 
 local dungeon_display = {
     { id = 1, display = _G.PLAYER_DIFFICULTY1 },
@@ -30,18 +24,49 @@ local legacy_display = {
     { id = 6, display = _G.RAID_DIFFICULTY_25PLAYER_HEROIC },
 }
 
-local green = "0000ff00"
+-- the map tables are auto-sorting based on the strings, this is to preserve manual ordering
+local function array_to_map(array)
+    local output = {}
+    for _, el in ipairs(array) do
+        output[el.id] = el.display
+    end
+    return output
+end
 
 local dungeonDiffMap = array_to_map(dungeon_display)
 local raidDiffMap = array_to_map(raid_display)
 local legacyRaidDiffMap = array_to_map(legacy_display)
+
+-------------
+--- View Code
+-------------
+
+local GREEN = "0000ff00"
+local GREY = "00777777"
+
+local function color(text, color) 
+    return "\124c" .. color .. text .. "\124r"
+end
+
+--- Handles conditional coloring of text of Legacy Raid options when you're on Mythic, to mimic the WoW UI
+local function color_with_legacy(text, difficulty_map)
+    if GetRaidDifficultyID() ~= 16 then
+        return text
+    end
+
+    if difficulty_map ~= legacyRaidDiffMap and difficulty_map ~= legacy_display then
+        return text
+    end
+    
+    return color(text, GREY)
+end
 
 local function difficulty(description, getter_func, diff_map)
     local id = getter_func()
     local out = diff_map[id]
     assert(out, "Could not find " .. description .. " difficulty ID " .. id ..
         " in to-string map. Have these values changed on Blizzard's side?")
-    return out
+    return color_with_legacy(out, diff_map)
 end
 
 local function build_diff_setter(self, difficulty_map, getter_function, setter_function)
@@ -50,16 +75,15 @@ local function build_diff_setter(self, difficulty_map, getter_function, setter_f
         local prefix = ""
 
         if selected_id == el.id then
-            prefix = "\124c" .. green .. ">" .. "\124r"
+            prefix = color(">", GREEN)
         end
 
-        local line = self:AddLine(prefix, el.display)
+        local line = self:AddLine(prefix, color_with_legacy(el.display, difficulty_map))
 
         if selected_id ~= el.id then
             local callback = function()
-                setter_function(el.id)
                 self:Clear()
-                build_tooltip(self)
+                setter_function(el.id)
             end
             self:SetLineScript(line, "OnMouseUp", callback)
         end
@@ -93,9 +117,9 @@ local function build_label()
     return table.concat(display, " / ")
 end
 
--------------------
--- Wiring/LDB/QTip
--------------------
+--------------------
+--- Wiring/LDB/QTip
+--------------------
 
 local ADDON, namespace = ...
 local LibQTip = LibStub('LibQTip-1.0')
