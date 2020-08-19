@@ -1,5 +1,14 @@
 -- TODO if inside an instance, only show the relevant settings
--- TODO toggleable shorthand mode w/ savedvariables on click
+-- TODO get Heroic/Mythic icons and display those where relevant
+-- interface/encounterjournal/ui-ej-heroictexticon.blp ?
+
+
+------------------------------
+--- Initialize Saved Variables
+------------------------------
+if icbat_bdd_short_mode == nil then
+    icbat_bdd_short_mode = false
+end
 
 -------------------
 --- Data structures
@@ -107,17 +116,22 @@ local function build_tooltip(self)
 end
 
 local function build_label()
-    local legacy_display = difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)
-    
-    if is_raid_mythic() then
-        legacy_display = "\124c" .. "00777777" .. legacy_display .. "\124r"
-    end
-
     local display = {
         difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
         difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
-        legacy_display
+        difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap),
     }
+
+    if icbat_bdd_short_mode then
+        display[1] = strsub(display[1], 1, 1)
+        display[2] = strsub(display[2], 1, 1)
+        display[3] = strsub(display[3], 1, 2)
+    end
+
+    if is_raid_mythic() then
+        display[3] = "\124c" .. "00777777" .. display[3] .. "\124r"
+    end
+
     return table.concat(display, " / ")
 end
 
@@ -166,7 +180,8 @@ function dataobj:OnLeave()
 end
 
 function dataobj:OnClick()
-    ToggleLFDParentFrame()
+    icbat_bdd_short_mode = not icbat_bdd_short_mode
+    print(icbat_bdd_short_mode)
 end
 
 local function set_label(self)

@@ -3,6 +3,7 @@
 ## Notes: Dungeon Difficulty display and switching
 ## Author: @icbat
 ## Version: 1
+## SavedVariablesPerCharacter: icbat_bdd_short_mode
 
 ## Dependencies
 libs/LibStub.lua
