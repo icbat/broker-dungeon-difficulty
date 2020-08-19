@@ -41,32 +41,16 @@ local legacyRaidDiffMap = array_to_map(legacy_display)
 --- View Code
 -------------
 
-local GREEN = "0000ff00"
-local GREY = "00777777"
-
-local function color(text, color) 
-    return "\124c" .. color .. text .. "\124r"
-end
-
---- Handles conditional coloring of text of Legacy Raid options when you're on Mythic, to mimic the WoW UI
-local function color_with_legacy(text, difficulty_map)
-    if GetRaidDifficultyID() ~= 16 then
-        return text
-    end
-
-    if difficulty_map ~= legacyRaidDiffMap and difficulty_map ~= legacy_display then
-        return text
-    end
-    
-    return color(text, GREY)
-end
-
 local function difficulty(description, getter_func, diff_map)
     local id = getter_func()
     local out = diff_map[id]
     assert(out, "Could not find " .. description .. " difficulty ID " .. id ..
         " in to-string map. Have these values changed on Blizzard's side?")
-    return color_with_legacy(out, diff_map)
+    return out
+end
+
+local function is_raid_mythic()
+    return GetRaidDifficultyID() == 16
 end
 
 local function build_diff_setter(self, difficulty_map, getter_function, setter_function)
@@ -75,10 +59,10 @@ local function build_diff_setter(self, difficulty_map, getter_function, setter_f
         local prefix = ""
 
         if selected_id == el.id then
-            prefix = color(">", GREEN)
+            prefix = ">"
         end
 
-        local line = self:AddLine(prefix, color_with_legacy(el.display, difficulty_map))
+        local line = self:AddLine(prefix, el.display)
 
         if selected_id ~= el.id then
             local callback = function()
@@ -107,13 +91,33 @@ local function build_tooltip(self)
 
     self:AddHeader("", _G.LEGACY_RAID_DIFFICULTY)
     self:AddSeparator()
+    local startLegacy = self:GetLineCount()
     build_diff_setter(self, legacy_display, GetLegacyRaidDifficultyID, SetLegacyRaidDifficultyID)
+    local endLegacy = self:GetLineCount()
+    
+    if is_raid_mythic() then
+        -- grey out legacy text
+        for i = startLegacy, endLegacy do
+            self:SetLineTextColor(i, 1, 1, 1, 0.5)
+        end
+    end
+
+    -- make the indicators green
+    self:SetColumnTextColor(1, 0, 1, 0, 1)
 end
 
 local function build_label()
-    local display = {difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
-                     difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
-                     difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)}
+    local legacy_display = difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)
+    
+    if is_raid_mythic() then
+        legacy_display = "\124c" .. "00777777" .. legacy_display .. "\124r"
+    end
+
+    local display = {
+        difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
+        difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
+        legacy_display
+    }
     return table.concat(display, " / ")
 end
 
