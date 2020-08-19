@@ -1,7 +1,7 @@
--- TODO if inside an instance, only show the relevant settings
 -- TODO get Heroic/Mythic icons and display those where relevant
 -- interface/encounterjournal/ui-ej-heroictexticon.blp ?
 
+-- TODO grey out/remove click if you're in a party and not lead
 
 ------------------------------
 --- Initialize Saved Variables
@@ -115,24 +115,54 @@ local function build_tooltip(self)
     self:SetColumnTextColor(1, 0, 1, 0, 1)
 end
 
-local function build_label()
-    local display = {
-        difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
-        difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
-        difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap),
+local function build_label_table() 
+    local in_instance, instance_type = IsInInstance()
+
+    if instance_type == "party" then
+        return {dungeon = difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap) }
+    end
+    
+    if instance_type == "raid" then
+        local table = {}
+        table["raid"] = difficulty("Raid", GetRaidDifficultyID, raidDiffMap)
+        if C_Loot.IsLegacyLootModeEnabled() then
+            table["legacy"] = difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)
+        end
+        return table
+    end
+
+    return {
+        dungeon = difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
+        raid = difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
+        legacy = difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)
     }
+end
+
+local function build_label()
+    local display = build_label_table()
 
     if icbat_bdd_short_mode then
-        display[1] = strsub(display[1], 1, 1)
-        display[2] = strsub(display[2], 1, 1)
-        display[3] = strsub(display[3], 1, 2)
+        if display["dungeon"] then 
+            display["dungeon"] = strsub(display["dungeon"], 1, 1)
+        end
+        if display["raid"] then 
+            display["raid"] = strsub(display["raid"], 1, 1)
+        end
+        if display["legacy"] then 
+            display["legacy"] = strsub(display["legacy"], 1, 2)
+        end
     end
 
     if is_raid_mythic() then
-        display[3] = "\124c" .. "00777777" .. display[3] .. "\124r"
+        display["legacy"] = "\124c" .. "00777777" .. display["legacy"] .. "\124r"
     end
 
-    return table.concat(display, " / ")
+    local to_display = {}
+    to_display[#to_display + 1] = display["dungeon"]
+    to_display[#to_display + 1] = display["raid"]
+    to_display[#to_display + 1] = display["legacy"]
+
+    return table.concat(to_display, " / ")
 end
 
 --------------------
@@ -181,7 +211,6 @@ end
 
 function dataobj:OnClick()
     icbat_bdd_short_mode = not icbat_bdd_short_mode
-    print(icbat_bdd_short_mode)
 end
 
 local function set_label(self)
