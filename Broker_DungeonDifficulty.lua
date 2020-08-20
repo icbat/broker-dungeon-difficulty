@@ -111,6 +111,15 @@ local function build_tooltip(self)
         end
     end
 
+    self:AddLine("")
+    local reset_line = self:AddLine("", _G.RESET_INSTANCES)
+
+    if IsInInstance() then
+        self:SetLineTextColor(reset_line, 1,1,1,0.5)
+    else
+        self:SetLineScript(reset_line, "OnMouseUp", ResetInstances)
+    end
+
     -- make the indicators green
     self:SetColumnTextColor(1, 0, 1, 0, 1)
 end
