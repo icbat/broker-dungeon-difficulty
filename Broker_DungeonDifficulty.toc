@@ -4,6 +4,7 @@
 ## Author: @icbat
 ## Version: 1
 ## SavedVariablesPerCharacter: icbat_bdd_short_mode
+## SavedVariables: icbat_bdd_display_name_cache
 
 ## Dependencies
 libs/LibStub.lua

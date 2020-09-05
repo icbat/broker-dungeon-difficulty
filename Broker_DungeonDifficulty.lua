@@ -2,81 +2,62 @@
 -- interface/encounterjournal/ui-ej-heroictexticon.blp ?
 
 -- TODO grey out/remove click if you're in a party and not lead
+-- TODO swap from green to something else if you're unable to select it
+
+-- TODO test in LFR to make sure it doesn't explode
 
 ------------------------------
 --- Initialize Saved Variables
 ------------------------------
 if icbat_bdd_short_mode == nil then
+    -- whether or not the label should show full names or initials
     icbat_bdd_short_mode = false
+end
+
+if icbat_bdd_display_name_cache == nil then
+    -- holds id -> name that we have seen before
+    icbat_bdd_display_name_cache = {}
 end
 
 -------------------
 --- Data structures
 -------------------
 
-local dungeon_display = {
-    { id = 1, display = _G.PLAYER_DIFFICULTY1 },
-    { id = 2, display = _G.PLAYER_DIFFICULTY2 },
-    { id = 23, display = _G.PLAYER_DIFFICULTY6 },
-}
+local dungeon_display = { 1, 2, 23 }
 
-local raid_display = {
-    { id = 14, display = _G.PLAYER_DIFFICULTY1 },
-    { id = 15, display = _G.PLAYER_DIFFICULTY2 },
-    { id = 16, display = _G.PLAYER_DIFFICULTY6 },
-}
+local raid_display = { 14, 15, 16 }
 
-local legacy_display = {
-    { id = 3, display = _G.RAID_DIFFICULTY_10PLAYER },
-    { id = 5, display = _G.RAID_DIFFICULTY_10PLAYER_HEROIC },
-    { id = 4, display = _G.RAID_DIFFICULTY_25PLAYER },
-    { id = 6, display = _G.RAID_DIFFICULTY_25PLAYER_HEROIC },
-}
-
--- the map tables are auto-sorting based on the strings, this is to preserve manual ordering
-local function array_to_map(array)
-    local output = {}
-    for _, el in ipairs(array) do
-        output[el.id] = el.display
-    end
-    return output
-end
-
-local dungeonDiffMap = array_to_map(dungeon_display)
-local raidDiffMap = array_to_map(raid_display)
-local legacyRaidDiffMap = array_to_map(legacy_display)
+local legacy_display = { 3, 5, 4, 6 }
 
 -------------
 --- View Code
 -------------
 
-local function difficulty(description, getter_func, diff_map)
-    local id = getter_func()
-    local out = diff_map[id]
-    assert(out, "Could not find " .. description .. " difficulty ID " .. id ..
-        " in to-string map. Have these values changed on Blizzard's side?")
-    return out
+local function get_difficulty_display(id)
+    if icbat_bdd_display_name_cache[id] == nil then
+        icbat_bdd_display_name_cache[id] = GetDifficultyInfo(id)
+    end
+    return icbat_bdd_display_name_cache[id]
 end
 
 local function is_raid_mythic()
     return GetRaidDifficultyID() == 16
 end
 
-local function build_diff_setter(self, difficulty_map, getter_function, setter_function)
-    for _, el in ipairs(difficulty_map) do
-        local selected_id = getter_function()
+local function build_diff_setter(self, difficulty_map, selected_id, setter_function)
+    for _, difficulty_id in ipairs(difficulty_map) do
         local prefix = ""
 
-        if selected_id == el.id then
+        if selected_id == difficulty_id then
             prefix = ">"
         end
 
-        local line = self:AddLine(prefix, el.display)
+        local line = self:AddLine(prefix, get_difficulty_display(difficulty_id))
 
-        if selected_id ~= el.id then
+        if selected_id ~= difficulty_id then
             local callback = function()
                 self:Clear()
-                setter_function(el.id)
+                setter_function(difficulty_id)
             end
             self:SetLineScript(line, "OnMouseUp", callback)
         end
@@ -88,22 +69,24 @@ local function build_tooltip(self)
     -- col 2 is general text
     self:AddHeader("", _G.DUNGEON_DIFFICULTY)
     self:AddSeparator()
-    build_diff_setter(self, dungeon_display, GetDungeonDifficultyID, SetDungeonDifficultyID)
+    build_diff_setter(self, dungeon_display, GetDungeonDifficultyID(), SetDungeonDifficultyID)
 
     self:AddLine("")
 
     self:AddHeader("", _G.RAID_DIFFICULTY)
     self:AddSeparator()
-    build_diff_setter(self, raid_display, GetRaidDifficultyID, SetRaidDifficultyID)
+    build_diff_setter(self, raid_display, GetRaidDifficultyID(), SetRaidDifficultyID)
 
     self:AddLine("")
 
     self:AddHeader("", _G.LEGACY_RAID_DIFFICULTY)
     self:AddSeparator()
     local startLegacy = self:GetLineCount()
-    build_diff_setter(self, legacy_display, GetLegacyRaidDifficultyID, SetLegacyRaidDifficultyID)
+    build_diff_setter(self, legacy_display, GetLegacyRaidDifficultyID(), SetLegacyRaidDifficultyID)
     local endLegacy = self:GetLineCount()
-    
+
+    -- TODO this isn't good enough, LFR at the very least screws with this
+    -- hopefully there's essentially an "is legacy" to toggle this, maybe like how it's done in the label to remove?
     if is_raid_mythic() then
         -- grey out legacy text
         for i = startLegacy, endLegacy do
@@ -125,26 +108,29 @@ local function build_tooltip(self)
 end
 
 local function build_label_table() 
+    local output = {
+        dungeon = get_difficulty_display(GetDungeonDifficultyID()),
+        raid = get_difficulty_display(GetRaidDifficultyID()),
+        legacy = get_difficulty_display(GetLegacyRaidDifficultyID()),
+    }
+
     local in_instance, instance_type = IsInInstance()
 
     if instance_type == "party" then
-        return {dungeon = difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap) }
+        table.remove(output, "raid")
+        table.remove(output, "legacy")
+        return output
     end
     
     if instance_type == "raid" then
-        local table = {}
-        table["raid"] = difficulty("Raid", GetRaidDifficultyID, raidDiffMap)
-        if C_Loot.IsLegacyLootModeEnabled() then
-            table["legacy"] = difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)
+        table.remove(output, "dungeon")
+        if not C_Loot.IsLegacyLootModeEnabled() then
+            table.remove(outout, "legacy")
         end
-        return table
+        return output
     end
 
-    return {
-        dungeon = difficulty("Dungeon", GetDungeonDifficultyID, dungeonDiffMap),
-        raid = difficulty("Raid", GetRaidDifficultyID, raidDiffMap),
-        legacy = difficulty("Legacy Raid", GetLegacyRaidDifficultyID, legacyRaidDiffMap)
-    }
+    return output
 end
 
 local function build_label()
@@ -245,4 +231,3 @@ f:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
 -- on login
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:SetScript("OnEvent", set_label)
-
