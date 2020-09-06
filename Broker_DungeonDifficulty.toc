@@ -13,4 +13,5 @@ libs/LibDataBroker-1.1.lua
 libs/LibQTip-1.0.lua
 
 ## This addon
+lib.lua
 Broker_DungeonDifficulty.lua

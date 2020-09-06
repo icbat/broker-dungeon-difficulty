@@ -1,10 +1,10 @@
 -- TODO get Heroic/Mythic icons and display those where relevant
 -- interface/encounterjournal/ui-ej-heroictexticon.blp ?
-
 -- TODO grey out/remove click if you're in a party and not lead
 -- TODO swap from green to something else if you're unable to select it
-
 -- TODO test in LFR to make sure it doesn't explode
+
+local lib = icbat_dungeon_diff_lib
 
 ------------------------------
 --- Initialize Saved Variables
@@ -23,22 +23,15 @@ end
 --- Data structures
 -------------------
 
-local dungeon_display = { 1, 2, 23 }
+local dungeon_display = {1, 2, 23}
 
-local raid_display = { 14, 15, 16 }
+local raid_display = {14, 15, 16}
 
-local legacy_display = { 3, 5, 4, 6 }
+local legacy_display = {3, 5, 4, 6}
 
 -------------
 --- View Code
 -------------
-
-local function get_difficulty_display(id)
-    if icbat_bdd_display_name_cache[id] == nil then
-        icbat_bdd_display_name_cache[id] = GetDifficultyInfo(id)
-    end
-    return icbat_bdd_display_name_cache[id]
-end
 
 local function is_raid_mythic()
     return GetRaidDifficultyID() == 16
@@ -52,7 +45,7 @@ local function build_diff_setter(self, difficulty_map, selected_id, setter_funct
             prefix = ">"
         end
 
-        local line = self:AddLine(prefix, get_difficulty_display(difficulty_id))
+        local line = self:AddLine(prefix, lib.get_difficulty_display(difficulty_id, icbat_bdd_display_name_cache, GetDifficultyInfo))
 
         if selected_id ~= difficulty_id then
             local callback = function()
@@ -98,66 +91,13 @@ local function build_tooltip(self)
     local reset_line = self:AddLine("", _G.RESET_INSTANCES)
 
     if IsInInstance() then
-        self:SetLineTextColor(reset_line, 1,1,1,0.5)
+        self:SetLineTextColor(reset_line, 1, 1, 1, 0.5)
     else
         self:SetLineScript(reset_line, "OnMouseUp", ResetInstances)
     end
 
     -- make the indicators green
     self:SetColumnTextColor(1, 0, 1, 0, 1)
-end
-
-local function build_label_table() 
-    local output = {
-        dungeon = get_difficulty_display(GetDungeonDifficultyID()),
-        raid = get_difficulty_display(GetRaidDifficultyID()),
-        legacy = get_difficulty_display(GetLegacyRaidDifficultyID()),
-    }
-
-    local in_instance, instance_type = IsInInstance()
-
-    if instance_type == "party" then
-        table.remove(output, "raid")
-        table.remove(output, "legacy")
-        return output
-    end
-    
-    if instance_type == "raid" then
-        table.remove(output, "dungeon")
-        if not C_Loot.IsLegacyLootModeEnabled() then
-            table.remove(outout, "legacy")
-        end
-        return output
-    end
-
-    return output
-end
-
-local function build_label()
-    local display = build_label_table()
-
-    if icbat_bdd_short_mode then
-        if display["dungeon"] then 
-            display["dungeon"] = strsub(display["dungeon"], 1, 1)
-        end
-        if display["raid"] then 
-            display["raid"] = strsub(display["raid"], 1, 1)
-        end
-        if display["legacy"] then 
-            display["legacy"] = strsub(display["legacy"], 1, 2)
-        end
-    end
-
-    if is_raid_mythic() then
-        display["legacy"] = "\124c" .. "00777777" .. display["legacy"] .. "\124r"
-    end
-
-    local to_display = {}
-    to_display[#to_display + 1] = display["dungeon"]
-    to_display[#to_display + 1] = display["raid"]
-    to_display[#to_display + 1] = display["legacy"]
-
-    return table.concat(to_display, " / ")
 end
 
 --------------------
@@ -209,7 +149,17 @@ function dataobj:OnClick()
 end
 
 local function set_label(self)
-    dataobj.text = build_label()
+    local in_instance, instance_type = IsInInstance()
+    -- TODO how do we figure this out? Not just legacy loot, but 10/25-matters
+    local is_in_legacy_raid = false
+
+    local dungeon = lib.get_difficulty_display(GetDungeonDifficultyID(), icbat_bdd_display_name_cache, GetDifficultyInfo)
+    local raid = lib.get_difficulty_display(GetRaidDifficultyID(), icbat_bdd_display_name_cache, GetDifficultyInfo)
+    local legacy = lib.get_difficulty_display(GetLegacyRaidDifficultyID(), icbat_bdd_display_name_cache, GetDifficultyInfo)
+
+    local label_table = lib.build_label_table(instance_type, is_in_legacy_raid, dungeon, raid, legacy)
+
+    dataobj.text = lib.build_label(icbat_bdd_short_mode, label_table)
 end
 
 -- invisible frame for updating/hooking events
