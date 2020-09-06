@@ -2,7 +2,6 @@
 -- interface/encounterjournal/ui-ej-heroictexticon.blp ?
 -- TODO grey out/remove click if you're in a party and not lead
 -- TODO swap from green to something else if you're unable to select it
--- TODO test in LFR to make sure it doesn't explode
 
 local lib = icbat_dungeon_diff_lib
 
