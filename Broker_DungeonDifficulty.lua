@@ -33,8 +33,8 @@ local legacy_display = {3, 5, 4, 6}
 --- View Code
 -------------
 
-local function is_raid_mythic()
-    return GetRaidDifficultyID() == 16
+local function legacy_selection_matters(raid_diff_id)
+    return raid_diff_id == 14 or raid_diff_id == 15
 end
 
 local function build_diff_setter(self, difficulty_map, selected_id, setter_function)
@@ -78,9 +78,7 @@ local function build_tooltip(self)
     build_diff_setter(self, legacy_display, GetLegacyRaidDifficultyID(), SetLegacyRaidDifficultyID)
     local endLegacy = self:GetLineCount()
 
-    -- TODO this isn't good enough, LFR at the very least screws with this
-    -- hopefully there's essentially an "is legacy" to toggle this, maybe like how it's done in the label to remove?
-    if is_raid_mythic() then
+    if not legacy_selection_matters(GetRaidDifficultyID()) then
         -- grey out legacy text
         for i = startLegacy, endLegacy do
             self:SetLineTextColor(i, 1, 1, 1, 0.5)
