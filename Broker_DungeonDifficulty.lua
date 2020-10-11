@@ -2,6 +2,7 @@
 -- interface/encounterjournal/ui-ej-heroictexticon.blp ?
 -- TODO grey out/remove click if you're in a party and not lead
 -- TODO swap from green to something else if you're unable to select it
+-- TODO don't let you reset instances if you're not lead, it breaks some other addons
 
 local lib = icbat_dungeon_diff_lib
 
