@@ -15,7 +15,7 @@ jobs:
       uses: actions/checkout@v2
   
     - name: Zip it good
-      run: zip -9 -r Broker_DungeonDifficulty.zip libs/ Broker_DungeonDifficulty.lua Broker.lua Display.lua Localization.lua Broker_DungeonDifficulty.toc LICENSE README.md
+      run: zip -9 -r Broker_DungeonDifficulty.zip libs/ Broker_DungeonDifficulty.lua lib.lua Broker_DungeonDifficulty.toc LICENSE README.md
       
 #     - name: What is here (for debugging)
 #       run: ls -lsa
