@@ -1,4 +1,4 @@
-## Interface: 80307
+## Interface: 90001
 ## Title: Broker: Dungeon Difficulty
 ## Notes: Dungeon Difficulty display and switching
 ## Author: @icbat
