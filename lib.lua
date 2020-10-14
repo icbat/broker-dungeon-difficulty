@@ -8,11 +8,11 @@ icbat_dungeon_diff_lib.get_difficulty_display = function(id, cache, getter)
 end
 
 --- builds a table that will have up to 3 entries, one for dungeon, raid, and legacy difficulties, depending on what instance type you are in
----@param current_instance_type one of nil, "party", or "raid"
----@param is_legacy_raid true if you are in a raid where your legacy difficulty matters
----@param dungeon_diff the pretty string for what dungeon difficulty you're set to
----@param raid_diff the pretty string for what raid difficulty you're set to
----@param legacy_diff the pretty string for what legacy raid difficulty you're set to
+---@param current_instance_type string one of nil, "party", or "raid"
+---@param is_legacy_raid boolean true if you are in a raid where your legacy difficulty matters
+---@param dungeon_diff string the pretty string for what dungeon difficulty you're set to
+---@param raid_diff string the pretty string for what raid difficulty you're set to
+---@param legacy_diff string the pretty string for what legacy raid difficulty you're set to
 icbat_dungeon_diff_lib.build_label_table = function(current_instance_type, is_legacy_raid, dungeon_diff, raid_diff, legacy_diff) 
     local output = {
         dungeon = dungeon_diff,
