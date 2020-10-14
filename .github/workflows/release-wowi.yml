@@ -23,7 +23,7 @@ jobs:
       run: mkdir ${{env.ADDON_NAME}}/
 
     - name: Put everything into a folder
-      run: cp ${{ env.ADDON_BUNDLE_FILES }} ${{ env.ADDON_NAME }}.toc ${{env.ADDON_NAME}}/
+      run: cp -r ${{ env.ADDON_BUNDLE_FILES }} ${{ env.ADDON_NAME }}.toc ${{env.ADDON_NAME}}/
   
     - name: Zip it good
       run: zip -9 -r ${{env.ADDON_NAME}}.zip  ${{env.ADDON_NAME}}/
