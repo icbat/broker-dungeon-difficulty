@@ -1,5 +1,10 @@
 name: Release to WoW Interface
 
+env:
+  ADDON_NAME: Broker_DungeonDifficulty
+  ADDON_BUNDLE_FILES: libs/ Broker_DungeonDifficulty.lua lib.lua LICENSE README.md
+  WOWI_ID: 25712
+
 on:
   workflow_dispatch:
     branches: [ main ]
@@ -13,9 +18,15 @@ jobs:
     steps:
     - name: Checkout the code
       uses: actions/checkout@v2
+
+    - name: Create 'dist' folder
+      run: mkdir ${{env.ADDON_NAME}}/
+
+    - name: Put everything into a folder
+      run: cp ${{ env.ADDON_BUNDLE_FILES }} ${{ env.ADDON_NAME }}.toc ${{env.ADDON_NAME}}/
   
     - name: Zip it good
-      run: zip -9 -r Broker_DungeonDifficulty.zip libs/ Broker_DungeonDifficulty.lua lib.lua Broker_DungeonDifficulty.toc LICENSE README.md
+      run: zip -9 -r ${{env.ADDON_NAME}}.zip  ${{env.ADDON_NAME}}/
       
 #     - name: What is here (for debugging)
 #       run: ls -lsa
@@ -24,16 +35,13 @@ jobs:
       id: get_versions
       uses: icbat/parse-wow-addon-version@v0.0.1
       with:
-        tocfile:  Broker_DungeonDifficulty.toc
+        tocfile: ${{ env.ADDON_NAME }}.toc
     
-#     - name: Echo Verisons
-#       run: echo ${{ steps.get_versions.outputs.supported_version }} ${{ steps.get_versions.outputs.addon_version }}
-
     - name: Upload to WoW Interface
       uses: icbat/wow-addon-upload-action@v0.0.4
       with:
-        id: 25712
-        zipFilePath: Broker_DungeonDifficulty.zip
-        compatible: 90001,80300,80205
+        id: ${{ env.WOWI_ID }}
+        zipFilePath: ${{ env.ADDON_NAME }}.zip
+        compatible: ${{ steps.get_versions.outputs.supported_version }}
         version: ${{ steps.get_versions.outputs.addon_version }}
         apiKey: ${{ secrets.WOW_INTERFACE }}
