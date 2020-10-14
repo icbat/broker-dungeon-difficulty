@@ -1,5 +1,5 @@
 local MAJOR = "LibQTip-1.0"
-local MINOR = 46 -- Should be manually increased
+local MINOR = 47 -- Should be manually increased
 local LibStub = _G.LibStub
 
 assert(LibStub, MAJOR .. " requires LibStub")
@@ -180,7 +180,10 @@ local function ReleaseFrame(frame)
 	frame:Hide()
 	frame:SetParent(nil)
 	frame:ClearAllPoints()
-	frame:SetBackdrop(nil)
+
+	if(frame.SetBackdrop) then --**
+        	frame:SetBackdrop(nil)
+    	end
 
 	ClearFrameScripts(frame)
 
@@ -222,8 +225,8 @@ function providerPrototype:AcquireCell()
 	local cell = tremove(self.heap)
 
 	if not cell then
-		cell = setmetatable(CreateFrame("Frame", nil, UIParent), self.cellMetatable)
-
+		--** cell = setmetatable(CreateFrame("Frame", nil, UIParent), self.cellMetatable)
+		cell = setmetatable(CreateFrame("Frame", nil, UIParent, "BackdropTemplate"), self.cellMetatable)
 		if type(cell.InitializeCell) == "function" then
 			cell:InitializeCell()
 		end
@@ -361,8 +364,8 @@ function AcquireTooltip()
 	local tooltip = tremove(tooltipHeap)
 
 	if not tooltip then
-		tooltip = CreateFrame("Frame", nil, UIParent)
-
+		--** tooltip = CreateFrame("Frame", nil, UIParent)
+		tooltip = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
 		local scrollFrame = CreateFrame("ScrollFrame", nil, tooltip)
 		scrollFrame:SetPoint("TOP", tooltip, "TOP", 0, -TOOLTIP_PADDING)
 		scrollFrame:SetPoint("BOTTOM", tooltip, "BOTTOM", 0, TOOLTIP_PADDING)
@@ -515,6 +518,10 @@ function InitializeTooltip(tooltip, key)
 	-- (Re)set frame settings
 	----------------------------------------------------------------------
 	local backdrop = GameTooltip:GetBackdrop()
+
+	if not tooltip.SetBackdrop then --**
+		Mixin(tooltip, BackdropTemplateMixin)
+	end
 
 	tooltip:SetBackdrop(backdrop)
 
@@ -1124,6 +1131,11 @@ function tipPrototype:AddSeparator(height, r, g, b, a)
 
 	line.height = height
 	line:SetHeight(height)
+	
+	if not line.SetBackdrop then --**
+		Mixin(line, BackdropTemplateMixin)
+	end
+
 	line:SetBackdrop(GenericBackdrop)
 	line:SetBackdropColor(r or color.r, g or color.g, b or color.b, a or 1)
 
@@ -1132,6 +1144,10 @@ end
 
 function tipPrototype:SetCellColor(lineNum, colNum, r, g, b, a)
 	local cell = self.lines[lineNum].cells[colNum]
+
+	if not cell.SetBackdrop then --**
+		Mixin(cell, BackdropTemplateMixin)
+	end
 
 	if cell then
 		local sr, sg, sb, sa = self:GetBackdropColor()
@@ -1144,6 +1160,10 @@ end
 function tipPrototype:SetColumnColor(colNum, r, g, b, a)
 	local column = self.columns[colNum]
 
+	if not colum.SetBackdrop then --**
+		Mixin(colum, BackdropTemplateMixin)
+	end
+
 	if column then
 		local sr, sg, sb, sa = self:GetBackdropColor()
 		column:SetBackdrop(GenericBackdrop)
@@ -1154,9 +1174,12 @@ end
 function tipPrototype:SetLineColor(lineNum, r, g, b, a)
 	local line = self.lines[lineNum]
 
+	if not line.SetBackdrop then
+		Mixin(line, BackdropTemplateMixin)
+	end
+	
 	if line then
 		local sr, sg, sb, sa = self:GetBackdropColor()
-
 		line:SetBackdrop(GenericBackdrop)
 		line:SetBackdropColor(r or sr, g or sg, b or sb, a or sa)
 	end
