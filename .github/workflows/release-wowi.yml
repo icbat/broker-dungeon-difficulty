@@ -1,14 +1,19 @@
-name: Release to WoW Interface
+name: Release new version of addon
 
 env:
+  # Must match the name of your TOC file for WoW to load this addon at all
   ADDON_NAME: Broker_DungeonDifficulty
+  # The list of what you want to ship in your ZIP file, minus the TOC which is required
   ADDON_BUNDLE_FILES: libs/ Broker_DungeonDifficulty.lua lib.lua LICENSE README.md
+  # The ID number for WoW Interface to be able to upload
   WOWI_ID: 25712
 
 on:
   workflow_dispatch:
+    # Enables a button to manually run this against the main branch
     branches: [ main ]
   push:
+    # Enables automatic deploys off pushes/merges into the main branch
     branches: [ main ]
 
 jobs:
@@ -28,17 +33,36 @@ jobs:
     - name: Zip it good
       run: zip -9 -r ${{env.ADDON_NAME}}.zip  ${{env.ADDON_NAME}}/
       
-#     - name: What is here (for debugging)
-#       run: ls -lsa
-      
     - name: Parse WoW Addon Verions
       id: get_versions
-      uses: icbat/parse-wow-addon-version@v0.0.1
+      uses: icbat/parse-wow-addon-version@v1.0.1
       with:
         tocfile: ${{ env.ADDON_NAME }}.toc
-    
+
+    - name: Create GH Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_versions.outputs.addon_version }}
+        release_name: Release ${{ steps.get_versions.outputs.addon_version }}
+        draft: false
+        prerelease: false
+        
+    - name: Upload GH Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ env.ADDON_NAME }}.zip
+        asset_name: ${{ env.ADDON_NAME }}.zip
+        asset_content_type: application/zip
+
     - name: Upload to WoW Interface
-      uses: icbat/wow-addon-upload-action@v0.0.4
+      uses: icbat/wow-addon-upload-action@v1.0.1
       with:
         id: ${{ env.WOWI_ID }}
         zipFilePath: ${{ env.ADDON_NAME }}.zip
