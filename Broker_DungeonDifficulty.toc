@@ -2,7 +2,7 @@
 ## Title: Broker: Dungeon Difficulty
 ## Notes: Dungeon Difficulty display and switching
 ## Author: @icbat
-## Version: 1
+## Version: 2
 ## SavedVariablesPerCharacter: icbat_bdd_short_mode
 ## SavedVariables: icbat_bdd_display_name_cache
 
