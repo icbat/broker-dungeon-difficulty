@@ -1,0 +1,19 @@
+name: Release new version of addon to WoW Interface
+
+on:
+  workflow_dispatch:
+    # Enables a button to manually run this against the main branch
+    branches: [ main ]
+  push:
+    # Enables automatic deploys off pushes/merges into the main branch
+    branches: [ main ]
+
+jobs:
+  build:
+    uses: icbat/wow-addon-github-workflow/.github/workflows/release-wowi.yml@main
+    with:
+      addon_name: Broker_DungeonDifficulty
+      addon_bundled_files: libs/ Broker_DungeonDifficulty.lua lib.lua LICENSE README.md
+      wowi_id: 25712
+    secrets:
+      wowi_api_token: ${{secrets.WOWI_API_TOKEN}}
