@@ -1,8 +1,8 @@
-## Interface: 90205
+## Interface: 90207
 ## Title: Broker: Dungeon Difficulty
 ## Notes: Dungeon Difficulty display and switching
 ## Author: @icbat
-## Version: 7
+## Version: 8
 ## SavedVariablesPerCharacter: icbat_bdd_short_mode
 ## SavedVariables: icbat_bdd_display_name_cache
 
