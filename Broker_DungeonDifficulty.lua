@@ -87,11 +87,20 @@ local function build_tooltip(self)
 
     self:AddLine("")
     local reset_line = self:AddLine("", _G.RESET_INSTANCES)
-
+    
     if IsInInstance() then
         self:SetLineTextColor(reset_line, 1, 1, 1, 0.5)
     else
         self:SetLineScript(reset_line, "OnMouseUp", ResetInstances)
+    end
+    
+    self:AddLine("")
+    local leave_group_line = self:AddLine("", _G.PARTY_LEAVE)
+
+    if IsInGroup() then
+        self:SetLineScript(leave_group_line, "OnMouseUp", function() C_PartyInfo.ConfirmLeaveParty() end)
+    else
+        self:SetLineTextColor(leave_group_line, 1, 1, 1, 0.5)
     end
 
     -- make the indicators green

@@ -1,8 +1,9 @@
-## Interface: 100002
+## Interface: 110000
 ## Title: Broker: Dungeon Difficulty
 ## Notes: Dungeon Difficulty display and switching
 ## Author: @icbat
-## Version: 10
+## Version: 11
+## IconTexture: Interface/Addons/Broker_DungeonDifficulty/ick-logo
 ## SavedVariablesPerCharacter: icbat_bdd_short_mode
 ## SavedVariables: icbat_bdd_display_name_cache
 
