@@ -2,10 +2,14 @@
 ## Title: Broker: Dungeon Difficulty
 ## Notes: Dungeon Difficulty display and switching
 ## Author: @icbat
-## Version: 11
 ## IconTexture: Interface/Addons/Broker_DungeonDifficulty/ick-logo
 ## SavedVariablesPerCharacter: icbat_bdd_short_mode
 ## SavedVariables: icbat_bdd_display_name_cache
+
+### BigWigs Packager Fields
+## Version: @project-version@
+## X-Wago-ID: 4N2mVmGL
+## X-WoWI-ID: 25712
 
 ## Dependencies
 libs/LibStub.lua
