@@ -1,4 +1,4 @@
-## Interface: 110000
+## Interface: 110002
 ## Title: Broker: Dungeon Difficulty
 ## Notes: Dungeon Difficulty display and switching
 ## Author: @icbat
@@ -12,10 +12,10 @@
 ## X-WoWI-ID: 25712
 
 ## Dependencies
-libs/LibStub.lua
-libs/CallbackHandler-1.0.lua
-libs/LibDataBroker-1.1.lua
-libs/LibQTip-1.0.lua
+libs/LibStub/LibStub.lua
+libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
+libs/LibDataBroker-1.1/LibDataBroker-1.1.lua
+libs/LibQTip-1.0/LibQTip-1.0.lua
 
 ## This addon
 lib.lua

@@ -1,0 +1,16 @@
+externals:
+    libs/LibStub:
+        url: https://repos.wowace.com/wow/libstub/trunk
+        tag: latest
+
+    libs/CallbackHandler-1.0:
+        url: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+        tag: latest
+
+    libs/LibDataBroker-1.1:
+        url: https://repos.wowace.com/wow/libdatabroker-1-1
+        tag: latest
+
+    libs/LibQTip-1.0:
+        url: https://github.com/Torhal/LibQTip-1.0.git
+        tag: latest

@@ -1,3 +1,10 @@
+# BigWigs Packager local script
+.release
+
+# Dependencies, these are pulled in at build time w/ BigWigs Packager
+# Locally, you need to build once and then grab them and copy them into this ignored folder
+libs/
+
 # Compiled Lua sources
 luac.out
 
